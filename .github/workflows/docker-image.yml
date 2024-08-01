@@ -42,4 +42,4 @@ jobs:
           file: "Dockerfile"
           context: "/"
           push: true
-          tags: "${{ env.REGISTRY }}/SSRAJ017/${{ env.TOOL }}:${{ env.VERSION }}"
+          tags: "${{ env.REGISTRY }}/ssraj017/${{ env.TOOL }}:${{ env.VERSION }}"
