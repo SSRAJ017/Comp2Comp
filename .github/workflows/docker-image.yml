@@ -1,0 +1,45 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+ build:
+    name: 'Build'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: "Build:checkout"
+        uses: actions/checkout@v2
+      # there is likely a more elegant way to parse this back in the list-manifests step.
+      # See https://code.dblock.org/2021/09/03/generating-task-matrix-by-looping-over-repo-files-with-github-actions.html and
+      # https://stackoverflow.com/questions/73402042/github-action-expressions-split-string  and
+      # https://stackoverflow.com/questions/66025220/paired-values-in-github-actions-matrix for inspiration
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: "ghcr.io"
+          username: SSRAJ017
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Build:dockerimage'
+        # we want the actions's "if" to evaluate to true if the tag doesnt exist,
+        # so we try it to list the tag via curl; if that fails, let it return a successfull exit code via the echo statment
+        # otherwise raise an error
+        uses: docker/build-push-action@v2
+        env:
+          REGISTRY: "ghcr.io"
+          VERSION: 0.0.1
+          TOOL: comp2comp
+        with:
+          build-args: "VERSION=${{ env.VERSION }}"
+          file: "Dockerfile"
+          context: "/"
+          push: true
+          tags: "${{ env.REGISTRY }}/vdblab/${{ env.TOOL }}:${{ env.VERSION }}"
